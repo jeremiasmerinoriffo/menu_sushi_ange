@@ -1321,19 +1321,19 @@
       mensaje += `Nombre: ${cliente}%0A`;
       mensaje += `Salsas: ${datosFinales.salsas.join(", ")}%0A`;
 
-      if (datosFinales.palillos === "Si") {
-        mensaje += `Palillos: Sí, ${datosFinales.cantidadPalillos} %0A`;
-      } else {
-        mensaje += `Palillos: No%0A`;
-      }
+if (datosFinales.palillos === "Si") {
+  mensaje += `Palillos: Sí, ${datosFinales.cantidadPalillos} %0A`;
+} else {
+  mensaje += `Palillos: No%0A`;
+}
 
-      if (datosFinales.observacionesFinales) {
-        mensaje += `Observaciones finales: ${datosFinales.observacionesFinales}`;
-      }
+if (datosFinales.observacionesFinales) {
+  mensaje += `Observaciones finales: ${datosFinales.observacionesFinales}`;
+}
 
-      window.open(`https://wa.me/${WHATSAPP}?text=${mensaje}`, "_blank");
-    }
-
+window.location.href =
+  `https://wa.me/${WHATSAPP}?text=${mensaje}`;
+}
     renderMenu();
   </script>
 </body>
