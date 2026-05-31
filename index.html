@@ -934,7 +934,7 @@
               <button class="remove-extra-btn" onclick="quitarIngredienteExtra('${id}', ${rollIndex})">Cerrar ✕</button>
             </div>
             <select id="ing4-${id}-${rollIndex}" onchange="actualizarIngredientes('${id}', ${rollIndex})"></select>
-            <div class="small">El cuarto ingrediente suma ${formatCLP(EXTRA_INGREDIENTE)} en este roll.</div>
+            <div class="small">El cuarto ingrediente suma ${formatCLP(EXTRA_INGREDIENTE)} en este </div>
           </div>
 
           <button class="extra-btn" id="extraBtn-${id}-${rollIndex}" onclick="mostrarIngredienteExtra('${id}', ${rollIndex})">+ Agregar ingrediente 4</button>
@@ -1026,7 +1026,7 @@
           extraCuarto += EXTRA_INGREDIENTE;
         }
 
-        if (ingredientesRoll.includes("Salmón (+$1.300)")) {
+        if (ingredientesRoll.includes("Salmón (+1.300)")) {
           extraSalmon += 1300;
         }
 
