@@ -157,6 +157,12 @@
       font-weight: 900;
     }
 
+    .footer-pedido-accion {
+      display:flex;
+      justify-content:flex-end;
+      margin-top:12px;
+    }
+
     .btn-terminado {
       background: #25D366;
       color: white;
@@ -475,9 +481,9 @@
             </div>
             <div class="pedido-actions">
               <div class="pedido-total">${formatCLP(pedido.total)}</div>
-              ${terminado
-                ? `<button class="btn-soft" onclick="marcarPendiente('${pedido.id}')">↩️ Pendiente</button>`
-                : `<button class="btn-terminado" onclick="terminarPedido('${pedido.id}')">✅ Terminado</button>`
+              ${!terminado
+                ? `<button class="btn-terminado" onclick="terminarPedido('${pedido.id}')">✅ Finalizar</button>`
+                : ``
               }
             </div>
           </div>
@@ -504,6 +510,14 @@
             <div class="muted">Palillos: ${datosFinales.palillos === "Si" ? "Sí, " + datosFinales.cantidadPalillos : "No"}</div>
             ${datosFinales.observacionesFinales ? `<div class="muted">Obs finales: ${datosFinales.observacionesFinales}</div>` : ""}
           </div>
+
+          ${terminado ? `
+            <div class="footer-pedido-accion">
+              <button class="btn-soft" onclick="marcarPendiente('${pedido.id}')">
+                ↩️ Marcar como pendiente
+              </button>
+            </div>
+          ` : ""}
         </div>
       `;
     }
