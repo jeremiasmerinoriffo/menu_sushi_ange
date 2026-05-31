@@ -131,6 +131,45 @@
       white-space: nowrap;
     }
 
+
+    .bulk-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn-select {
+      background: #111;
+      color: white;
+    }
+
+    .btn-danger {
+      background: var(--rojo);
+      color: white;
+    }
+
+    .select-box {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 8px 10px;
+      background: #fff1f1;
+      border: 1px solid rgba(214,40,40,.18);
+      border-radius: 12px;
+      font-weight: 800;
+      color: var(--rojo);
+    }
+
+    .select-box.active {
+      display: flex;
+    }
+
+    .select-box input {
+      width: auto;
+      transform: scale(1.2);
+    }
     .stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -289,6 +328,13 @@
           <button class="btn-soft" onclick="cargarPedidos()">Actualizar</button>
           <button class="btn-soft" onclick="salir()">Salir</button>
         </div>
+
+        <div class="bulk-actions">
+          <button id="btnModoSeleccion" class="btn-select" onclick="activarSeleccionPedidos()">Seleccionar pedidos</button>
+          <button id="btnSeleccionarTodos" class="btn-soft hidden" onclick="seleccionarTodosPedidos()">Seleccionar todos</button>
+          <button id="btnEliminarSeleccionados" class="btn-danger hidden" onclick="eliminarPedidosSeleccionados()">Eliminar seleccionados</button>
+          <button id="btnCancelarSeleccion" class="btn-soft hidden" onclick="cancelarSeleccionPedidos()">Cancelar selección</button>
+        </div>
       </div>
 
       <div class="stats">
@@ -371,6 +417,9 @@
 
     const CLAVE_ADMIN = "1234";
     let pedidosGlobales = [];
+    let pedidosDiaActual = [];
+    let modoSeleccion = false;
+    let pedidosSeleccionados = new Set();
 
     function formatCLP(valor) {
       return "$" + Number(valor || 0).toLocaleString("es-CL");
@@ -516,9 +565,15 @@
     function renderPedido(pedido) {
       const productos = pedido.productos || [];
       const hora = obtenerHoraLocalPedido(pedido);
+      const checked = pedidosSeleccionados.has(pedido.id) ? "checked" : "";
 
       return `
         <div class="pedido">
+          <label class="select-box ${modoSeleccion ? "active" : ""}">
+            <input type="checkbox" ${checked} onchange="togglePedidoSeleccionado('${pedido.id}', this.checked)">
+            Seleccionar este pedido
+          </label>
+
           <div class="pedido-head">
             <div>
               <h3>${pedido.cliente || "Cliente no indicado"}</h3>
@@ -547,6 +602,96 @@
           `).join("")}
         </div>
       `;
+    }
+
+    function actualizarBotonesSeleccion() {
+      const ids = [
+        "btnSeleccionarTodos",
+        "btnEliminarSeleccionados",
+        "btnCancelarSeleccion"
+      ];
+
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle("hidden", !modoSeleccion);
+      });
+
+      const btnModo = document.getElementById("btnModoSeleccion");
+      if (btnModo) btnModo.classList.toggle("hidden", modoSeleccion);
+
+      const btnEliminar = document.getElementById("btnEliminarSeleccionados");
+      if (btnEliminar) {
+        const n = pedidosSeleccionados.size;
+        btnEliminar.textContent = n ? `Eliminar seleccionados (${n})` : "Eliminar seleccionados";
+      }
+    }
+
+    window.activarSeleccionPedidos = function activarSeleccionPedidos() {
+      modoSeleccion = true;
+      pedidosSeleccionados.clear();
+      actualizarBotonesSeleccion();
+      renderPedidosDia();
+    };
+
+    window.cancelarSeleccionPedidos = function cancelarSeleccionPedidos() {
+      modoSeleccion = false;
+      pedidosSeleccionados.clear();
+      actualizarBotonesSeleccion();
+      renderPedidosDia();
+    };
+
+    window.togglePedidoSeleccionado = function togglePedidoSeleccionado(id, checked) {
+      if (checked) {
+        pedidosSeleccionados.add(id);
+      } else {
+        pedidosSeleccionados.delete(id);
+      }
+      actualizarBotonesSeleccion();
+    };
+
+    window.seleccionarTodosPedidos = function seleccionarTodosPedidos() {
+      pedidosDiaActual.forEach(p => pedidosSeleccionados.add(p.id));
+      actualizarBotonesSeleccion();
+      renderPedidosDia();
+    };
+
+    window.eliminarPedidosSeleccionados = async function eliminarPedidosSeleccionados() {
+      const cantidad = pedidosSeleccionados.size;
+
+      if (!cantidad) {
+        alert("Selecciona al menos un pedido.");
+        return;
+      }
+
+      const ok = confirm(`¿Seguro que quieres eliminar ${cantidad} pedido(s)? Esta acción no se puede deshacer.`);
+      if (!ok) return;
+
+      try {
+        await Promise.all(
+          Array.from(pedidosSeleccionados).map(id => deleteDoc(doc(db, "pedidos", id)))
+        );
+
+        pedidosSeleccionados.clear();
+        modoSeleccion = false;
+        actualizarBotonesSeleccion();
+        await cargarPedidos();
+
+      } catch (error) {
+        console.error(error);
+        alert("No se pudieron eliminar los pedidos seleccionados. Revisa las reglas de Firestore.");
+      }
+    };
+
+    function renderPedidosDia() {
+      const lista = document.getElementById("pedidosLista");
+
+      if (!pedidosDiaActual.length) {
+        lista.innerHTML = `<div class="empty">No hay pedidos para esta fecha.</div>`;
+        return;
+      }
+
+      lista.innerHTML = pedidosDiaActual.map(renderPedido).join("");
     }
 
     window.entrar = function entrar() {
@@ -597,16 +742,11 @@
           pedidosGlobales.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        const pedidosDia = pedidosGlobales.filter(data => obtenerFechaLocalPedido(data) === fechaSeleccionada);
+        pedidosDiaActual = pedidosGlobales.filter(data => obtenerFechaLocalPedido(data) === fechaSeleccionada);
 
-        actualizarAnalisis(pedidosDia);
-
-        if (!pedidosDia.length) {
-          lista.innerHTML = `<div class="empty">No hay pedidos para esta fecha.</div>`;
-          return;
-        }
-
-        lista.innerHTML = pedidosDia.map(renderPedido).join("");
+        actualizarAnalisis(pedidosDiaActual);
+        actualizarBotonesSeleccion();
+        renderPedidosDia();
 
       } catch (error) {
         console.error(error);
