@@ -671,14 +671,18 @@
           </label>
 
           <div id="cantidadPalillos" style="display:none; margin-top:10px;">
-            <label>Cantidad de pares</label>
+            <label>¿Cuántos?</label>
             <select id="paresPalillos">
-              <option value="1">1 par</option>
-              <option value="2">2 pares</option>
-              <option value="3">3 pares</option>
-              <option value="4">4 pares</option>
-              <option value="5">5 pares</option>
-              <option value="6">6 pares</option>
+              <option value="1">1 </option>
+              <option value="2">2 </option>
+              <option value="3">3 </option>
+              <option value="4">4 </option>
+              <option value="5">5 </option>
+              <option value="6">6 </option>
+              <option value="7">7 </option>
+              <option value="8">8 </option>
+              <option value="9">9 </option>
+              <option value="10">10 </option>
             </select>
           </div>
         </div>
@@ -1318,7 +1322,7 @@
       mensaje += `Salsas: ${datosFinales.salsas.join(", ")}%0A`;
 
       if (datosFinales.palillos === "Si") {
-        mensaje += `Palillos: Sí, ${datosFinales.cantidadPalillos} pares%0A`;
+        mensaje += `Palillos: Sí, ${datosFinales.cantidadPalillos} %0A`;
       } else {
         mensaje += `Palillos: No%0A`;
       }
