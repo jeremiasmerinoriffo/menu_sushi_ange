@@ -1204,21 +1204,29 @@
     }
 
 
-    function abrirConfirmacion() {
-      if (carrito.length === 0) {
-        alert("Agrega al menos un producto al pedido.");
-        return;
-      }
+function abrirConfirmacion() {
+  if (carrito.length === 0) {
+    alert("Agrega al menos un producto al pedido.");
+    return;
+  }
 
-      const panel = document.getElementById("finalPanel");
-      panel.classList.add("active");
-      panel.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+  document.getElementById("finalPanel").classList.add("active");
 
-    function cerrarConfirmacion() {
-      document.getElementById("finalPanel").classList.remove("active");
-      document.querySelector(".cart-panel").scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+  // Oculta solo el botón de continuar, pero mantiene el total visible
+  document.querySelector(".send-btn").style.display = "none";
+
+  document.getElementById("finalPanel")
+    .scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function cerrarConfirmacion() {
+  document.getElementById("finalPanel").classList.remove("active");
+
+  // Vuelve a mostrar el botón de continuar
+  document.querySelector(".send-btn").style.display = "block";
+
+  document.querySelector(".cart-panel")
+    .scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
     function getDatosFinales() {
       const sinSalsas = document.getElementById("sinSalsas").checked;
