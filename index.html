@@ -1479,6 +1479,16 @@ function cerrarConfirmacion() {
     }
 
     async function enviarWhatsApp() {
+
+      const botonConfirmar = document.querySelector(".confirm-btn");
+
+if (botonConfirmar.disabled) return;
+
+botonConfirmar.disabled = true;
+botonConfirmar.textContent = "Enviando pedido...";
+botonConfirmar.style.opacity = "0.6";
+botonConfirmar.style.cursor = "not-allowed";
+      
       if (carrito.length === 0) {
         alert("Agrega al menos un producto al pedido.");
         return;
