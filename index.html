@@ -781,7 +781,7 @@
       "Pollo",
       "Camarón",
       "Kanikama",
-      "Salmón (+1.300) ",
+      "Salmón (+1300) ",
       "Palta",
       "Pimentón",
       "Choclo",
@@ -823,6 +823,13 @@
 
     function formatCLP(valor) {
       return "$" + Number(valor || 0).toLocaleString("es-CL");
+    }
+
+    function limpiarIngrediente(nombre) {
+      return String(nombre || "")
+        .replace(/\s*\(\+\$?1\.?300\)\s*/g, "")
+        .replace(/\s*\(\+1300\)\s*/g, "")
+        .trim();
     }
 
     function crearOpciones(valorActual = "", seleccionados = []) {
@@ -934,7 +941,7 @@
               <button class="remove-extra-btn" onclick="quitarIngredienteExtra('${id}', ${rollIndex})">Cerrar ✕</button>
             </div>
             <select id="ing4-${id}-${rollIndex}" onchange="actualizarIngredientes('${id}', ${rollIndex})"></select>
-            <div class="small">El cuarto ingrediente suma ${formatCLP(EXTRA_INGREDIENTE)} en este </div>
+            <div class="small">El cuarto ingrediente suma ${formatCLP(EXTRA_INGREDIENTE)} en este roll.</div>
           </div>
 
           <button class="extra-btn" id="extraBtn-${id}-${rollIndex}" onclick="mostrarIngredienteExtra('${id}', ${rollIndex})">+ Agregar ingrediente 4</button>
@@ -1026,7 +1033,7 @@
           extraCuarto += EXTRA_INGREDIENTE;
         }
 
-        if (ingredientesRoll.includes("Salmón (+1.300)")) {
+        if (ingredientesRoll.some(ing => limpiarIngrediente(ing) === "Salmón")) {
           extraSalmon += 1300;
         }
 
@@ -1252,7 +1259,7 @@
                 </div>
               </div>
               <div style="margin-top:8px;">
-                ${item.detalleRolls.map(r => `🍣 ${r.nombre}: ${r.ingredientes.join(", ")}`).join("<br>")}
+                ${item.detalleRolls.map(r => `🍣 ${r.nombre}: ${r.ingredientes.map(limpiarIngrediente).join(", ")}`).join("<br>")}
                 ${item.extraSalmon ? `<br>Adicional salmón: ${formatCLP(item.extraSalmon)}` : ""}
                 ${item.extraCuarto ? `<br>Ingrediente extra: ${formatCLP(item.extraCuarto)}` : ""}
                 
@@ -1377,7 +1384,8 @@ function cerrarConfirmacion() {
         mensaje += `*${i + 1}. ${item.nombre}* - ${formatCLP(item.precioFinal)}%0A`;
         mensaje += `${item.piezas}%0A`;
         item.detalleRolls.forEach(roll => {
-          mensaje += `- ${roll.nombre}: ${roll.ingredientes.map(i => i.replace(" (+$1.300)", "")).join(", ")}%0A`;});
+          mensaje += `- ${roll.nombre}: ${roll.ingredientes.map(limpiarIngrediente).join(", ")}%0A`;
+        });
         if (item.extraSalmon) mensaje += `Adicional salmón: ${formatCLP(item.extraSalmon)}%0A`;
         if (item.extraCuarto) mensaje += `Ingrediente extra: ${formatCLP(item.extraCuarto)}%0A`;
         
