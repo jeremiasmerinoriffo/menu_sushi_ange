@@ -291,16 +291,16 @@
   </main>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      getDocs,
-      query,
-      orderBy,
-      doc,
-      deleteDoc
-    } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  doc,
+  deleteDoc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDUMySSnAS5mpEFtncooBFn-268Z8LuD5Y",
@@ -477,18 +477,21 @@
       renderPedidosDia();
     };
 
-    window.eliminarPedido = async function eliminarPedido(id) {
-      const ok = confirm("¿Seguro que quieres eliminar este pedido? Esta acción no se puede deshacer.");
-      if (!ok) return;
+window.eliminarPedido = async function eliminarPedido(id) {
+  const ok = confirm("¿Ocultar este pedido de esta vista?");
+  if (!ok) return;
 
-      try {
-        await deleteDoc(doc(db, "pedidos", id));
-        await cargarPedidos();
-      } catch (error) {
-        console.error(error);
-        alert("No se pudo eliminar. Revisa que las reglas de Firestore permitan delete.");
-      }
-    };
+  try {
+    await updateDoc(doc(db, "pedidos", id), {
+      visiblePedidos: false
+    });
+
+    await cargarPedidos();
+  } catch (error) {
+    console.error(error);
+    alert("No se pudo ocultar el pedido.");
+  }
+};
 
     window.eliminarPedidosSeleccionados = async function eliminarPedidosSeleccionados() {
       const cantidad = pedidosSeleccionados.size;
@@ -543,10 +546,11 @@
           pedidosGlobales.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        pedidosDiaActual = pedidosGlobales.filter(data => obtenerFechaLocalPedido(data) === fechaSeleccionada);
-
-        actualizarBotonesSeleccion();
-        renderPedidosDia();
+       pedidosDiaActual = pedidosGlobales.filter(
+  data =>
+    obtenerFechaLocalPedido(data) === fechaSeleccionada &&
+    data.visiblePedidos !== false
+);
 
       } catch (error) {
         console.error(error);
