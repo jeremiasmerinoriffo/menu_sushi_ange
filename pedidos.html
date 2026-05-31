@@ -325,6 +325,13 @@
       return "$" + Number(valor || 0).toLocaleString("es-CL");
     }
 
+    function limpiarIngrediente(nombre) {
+      return String(nombre || "")
+        .replace(/\s*\(\+\$?1\.?300\)\s*/g, "")
+        .replace(/\s*\(\+1300\)\s*/g, "")
+        .trim();
+    }
+
     function getFechaObj(pedido) {
       if (pedido.fechaISO) return new Date(pedido.fechaISO);
       if (pedido.creadoEn && typeof pedido.creadoEn.toDate === "function") return pedido.creadoEn.toDate();
@@ -378,7 +385,7 @@
               <div class="muted">${prod.piezas || ""}</div>
 
               ${(prod.detalleRolls || []).map(roll => `
-                <div class="detalle-roll">🍣 ${roll.nombre}: ${(roll.ingredientes || []).join(", ")}</div>
+                <div class="detalle-roll">🍣 ${roll.nombre}: ${(roll.ingredientes || []).map(limpiarIngrediente).join(", ")}</div>
               `).join("")}
 
               ${prod.extraSalmon ? `<div class="muted">Adicional salmón: ${formatCLP(prod.extraSalmon)}</div>` : ""}
