@@ -1254,7 +1254,7 @@
               <div style="margin-top:8px;">
                 ${item.detalleRolls.map(r => `🍣 ${r.nombre}: ${r.ingredientes.join(", ")}`).join("<br>")}
                 ${item.extraSalmon ? `<br>Adicional salmón: ${formatCLP(item.extraSalmon)}` : ""}
-                ${item.extraCuarto ? `<br>Ingrediente 4 extra: ${formatCLP(item.extraCuarto)}` : ""}
+                ${item.extraCuarto ? `<br>Ingrediente extra: ${formatCLP(item.extraCuarto)}` : ""}
                 
               </div>
             </div>
@@ -1382,7 +1382,7 @@ function cerrarConfirmacion() {
   .join(", ")}%0A`;
         });
         if (item.extraSalmon) mensaje += `Adicional salmón: ${formatCLP(item.extraSalmon)}%0A`;
-        if (item.extraCuarto) mensaje += `Ingrediente 4 extra: ${formatCLP(item.extraCuarto)}%0A`;
+        if (item.extraCuarto) mensaje += `Ingrediente extra: ${formatCLP(item.extraCuarto)}%0A`;
         
         mensaje += `%0A`;
       });
