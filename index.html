@@ -650,7 +650,7 @@
 
     <section class="card datos-card">
       <label>Nombre</label>
-      <input id="cliente" placeholder="Ej: Pedro" />
+      <input id="cliente" placeholder="Ej: Pdro" />
     </section>
 
     <div class="section-title">
@@ -1377,10 +1377,7 @@ function cerrarConfirmacion() {
         mensaje += `*${i + 1}. ${item.nombre}* - ${formatCLP(item.precioFinal)}%0A`;
         mensaje += `${item.piezas}%0A`;
         item.detalleRolls.forEach(roll => {
-          mensaje += `- ${roll.nombre}: ${roll.ingredientes
-  .map(i => i.replace(" (+$1.300)", ""))
-  .join(", ")}%0A`;
-        });
+          mensaje += `- ${roll.nombre}: ${roll.ingredientes.map(i => i.replace(" (+$1.300)", "")).join(", ")}%0A`;});
         if (item.extraSalmon) mensaje += `Adicional salmón: ${formatCLP(item.extraSalmon)}%0A`;
         if (item.extraCuarto) mensaje += `Ingrediente extra: ${formatCLP(item.extraCuarto)}%0A`;
         
