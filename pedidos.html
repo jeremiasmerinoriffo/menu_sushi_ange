@@ -174,6 +174,73 @@
       white-space: nowrap;
     }
 
+
+
+    .tabs-pedidos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0 16px;
+    }
+
+    .tab-pedido {
+      border-radius: 18px;
+      padding: 14px 12px;
+      font-weight: 900;
+      font-size: 16px;
+      box-shadow: var(--sombra);
+      border: 2px solid transparent;
+    }
+
+    .tab-pendientes {
+      background: #fff8e8;
+      color: #8a5a00;
+      border-color: #ffd98a;
+    }
+
+    .tab-terminados {
+      background: #e8f8ea;
+      color: #1b7f3a;
+      border-color: #7bc67e;
+    }
+
+    .tab-pedido.active {
+      transform: translateY(-2px);
+      outline: 3px solid rgba(214,40,40,.12);
+    }
+
+    .vista-pedidos {
+      display: none;
+    }
+
+    .vista-pedidos.active {
+      display: block;
+    }
+
+    .grupo-pedidos {
+      margin-bottom: 22px;
+    }
+
+    .grupo-pedidos h2 {
+      margin: 14px 0 10px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      box-shadow: var(--sombra);
+      font-size: 20px;
+    }
+
+    .titulo-pendientes {
+      background: #fff8e8;
+      color: #8a5a00;
+      border: 1px solid #ffd98a;
+    }
+
+    .titulo-terminados {
+      background: #e8f8ea;
+      color: #1b7f3a;
+      border: 1px solid #7bc67e;
+    }
+
     .pedido {
       background: white;
       border-radius: 18px;
@@ -350,6 +417,7 @@
     let pedidosDiaActual = [];
     let modoSeleccion = false;
     let pedidosSeleccionados = new Set();
+    let vistaActiva = "pendientes";
 
     function formatCLP(valor) {
       return "$" + Number(valor || 0).toLocaleString("es-CL");
@@ -507,7 +575,9 @@
     };
 
     window.seleccionarTodosPedidos = function seleccionarTodosPedidos() {
-      pedidosDiaActual.forEach(p => pedidosSeleccionados.add(p.id));
+      pedidosDiaActual
+        .filter(p => vistaActiva === "pendientes" ? p.estado !== "terminado" : p.estado === "terminado")
+        .forEach(p => pedidosSeleccionados.add(p.id));
       actualizarBotonesSeleccion();
       renderPedidosDia();
     };
@@ -565,6 +635,11 @@
       }
     };
 
+    window.cambiarVistaPedidos = function cambiarVistaPedidos(vista) {
+      vistaActiva = vista;
+      renderPedidosDia();
+    };
+
     function renderPedidosDia() {
       const lista = document.getElementById("pedidosLista");
 
@@ -573,7 +648,38 @@
         return;
       }
 
-      lista.innerHTML = pedidosDiaActual.map(renderPedido).join("");
+      const pendientes = pedidosDiaActual.filter(p => p.estado !== "terminado");
+      const terminados = pedidosDiaActual.filter(p => p.estado === "terminado");
+
+      lista.innerHTML = `
+        <div class="tabs-pedidos">
+          <button
+            class="tab-pedido tab-pendientes ${vistaActiva === "pendientes" ? "active" : ""}"
+            onclick="cambiarVistaPedidos('pendientes')">
+            🟡 Pendientes (${pendientes.length})
+          </button>
+
+          <button
+            class="tab-pedido tab-terminados ${vistaActiva === "terminados" ? "active" : ""}"
+            onclick="cambiarVistaPedidos('terminados')">
+            ✅ Terminados (${terminados.length})
+          </button>
+        </div>
+
+        <div class="vista-pedidos ${vistaActiva === "pendientes" ? "active" : ""}">
+          ${pendientes.length
+            ? pendientes.map(renderPedido).join("")
+            : `<div class="empty">No hay pedidos pendientes.</div>`
+          }
+        </div>
+
+        <div class="vista-pedidos ${vistaActiva === "terminados" ? "active" : ""}">
+          ${terminados.length
+            ? terminados.map(renderPedido).join("")
+            : `<div class="empty">No hay pedidos terminados.</div>`
+          }
+        </div>
+      `;
     }
 
     window.cargarPedidos = async function cargarPedidos() {
