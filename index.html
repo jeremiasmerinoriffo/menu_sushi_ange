@@ -133,6 +133,51 @@
     .datos-card { margin-top: -8px; }
 
 
+    .repeat-card {
+      display: none;
+      background: linear-gradient(135deg, #fff8e8, #fff1f1);
+      border: 2px solid rgba(214,40,40,.18);
+      border-radius: var(--radio);
+      padding: 14px;
+      margin-top: 12px;
+      box-shadow: var(--sombra);
+    }
+
+    .repeat-card.active {
+      display: block;
+    }
+
+    .repeat-card h3 {
+      margin: 0 0 6px;
+      color: var(--rojo);
+      font-size: 18px;
+    }
+
+    .repeat-card p {
+      margin: 0 0 10px;
+      color: #555;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .repeat-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .repeat-btn {
+      background: linear-gradient(135deg, var(--rojo), var(--rojo-oscuro));
+      color: white;
+    }
+
+    .repeat-close-btn {
+      background: #111;
+      color: white;
+    }
+
+
+
     .promo-section.hidden {
       display: none;
     }
@@ -619,7 +664,7 @@
     }
 
     @media (max-width: 760px) {
-      .promo-grid, .builder-options, .envoltura-grid, .final-grid { grid-template-columns: 1fr; }
+      .promo-grid, .builder-options, .envoltura-grid, .final-grid, .repeat-actions { grid-template-columns: 1fr; }
       .ingredient-grid { grid-template-columns: 1fr; }
       .hero h1 { font-size: 29px; }
       .offer-head h2, .builder-head h2, .config-head h2 { font-size: 22px; }
@@ -651,6 +696,15 @@
     <section class="card datos-card">
       <label>Nombre</label>
       <input id="cliente" placeholder="Ej: Pedro" />
+
+      <div id="repeatCard" class="repeat-card">
+        <h3>🍣 ¿Quieres repetir tu último pedido?</h3>
+        <p id="repeatResumen">Tenemos guardado el último pedido realizado desde este celular.</p>
+        <div class="repeat-actions">
+          <button class="repeat-btn" onclick="repetirUltimoPedido()">Repetir pedido</button>
+          <button class="repeat-close-btn" onclick="ocultarSugerenciaPedido()">No, gracias</button>
+        </div>
+      </div>
     </section>
 
     <div class="section-title">
@@ -774,6 +828,7 @@
   <script>
     const WHATSAPP = "56979557665";
     const EXTRA_INGREDIENTE = 500;
+    const STORAGE_ULTIMO_PEDIDO = "ultimoPedidoSushiAnge";
 
     const ingredientes = [
       "Queso Philadelphia",
@@ -820,6 +875,67 @@
     let editandoIndex = null;
     let builderTipo = null;
     let builderEnvoltura = null;
+
+    function guardarUltimoPedidoLocal(cliente, total) {
+      try {
+        localStorage.setItem(STORAGE_ULTIMO_PEDIDO, JSON.stringify({
+          cliente,
+          total,
+          carrito,
+          fechaISO: new Date().toISOString()
+        }));
+      } catch (error) {
+        console.warn("No se pudo guardar el último pedido en este celular:", error);
+      }
+    }
+
+    function obtenerUltimoPedidoLocal() {
+      try {
+        const raw = localStorage.getItem(STORAGE_ULTIMO_PEDIDO);
+        return raw ? JSON.parse(raw) : null;
+      } catch (error) {
+        console.warn("No se pudo leer el último pedido:", error);
+        return null;
+      }
+    }
+
+    function mostrarSugerenciaUltimoPedido() {
+      const ultimo = obtenerUltimoPedidoLocal();
+      const card = document.getElementById("repeatCard");
+      const resumen = document.getElementById("repeatResumen");
+
+      if (!ultimo || !Array.isArray(ultimo.carrito) || ultimo.carrito.length === 0 || !card) {
+        return;
+      }
+
+      const total = Number(ultimo.total || 0);
+      resumen.textContent = `Último pedido: ${ultimo.carrito.length} producto(s), total ${formatCLP(total)}.`;
+      card.classList.add("active");
+    }
+
+    function repetirUltimoPedido() {
+      const ultimo = obtenerUltimoPedidoLocal();
+
+      if (!ultimo || !Array.isArray(ultimo.carrito) || ultimo.carrito.length === 0) {
+        alert("No encontramos un pedido anterior en este celular.");
+        return;
+      }
+
+      carrito = JSON.parse(JSON.stringify(ultimo.carrito));
+
+      if (ultimo.cliente && ultimo.cliente !== "No indicado") {
+        document.getElementById("cliente").value = ultimo.cliente;
+      }
+
+      renderCarrito();
+      ocultarSugerenciaPedido();
+      document.querySelector(".cart-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function ocultarSugerenciaPedido() {
+      const card = document.getElementById("repeatCard");
+      if (card) card.classList.remove("active");
+    }
 
     function formatCLP(valor) {
       return "$" + Number(valor || 0).toLocaleString("es-CL");
@@ -1372,6 +1488,8 @@ function cerrarConfirmacion() {
       const total = carrito.reduce((acc, item) => acc + item.precioFinal, 0);
       const datosFinales = getDatosFinales();
 
+      guardarUltimoPedidoLocal(cliente, total);
+
       try {
         await guardarPedidoFirebase(cliente, total);
       } catch (error) {
@@ -1410,6 +1528,7 @@ window.location.href =
   `https://wa.me/${WHATSAPP}?text=${mensaje}`;
 }
     renderMenu();
+    mostrarSugerenciaUltimoPedido();
   </script>
 </body>
 </html>
